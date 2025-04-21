@@ -1,84 +1,97 @@
 
-# 🔍 Binary Search Cheatsheet
-
-A comprehensive guide to implementing binary search patterns for finding boundaries in monotonic conditions.
+# 🔍 二分探索コードの整理（2025/04/21）
 
 ---
 
-## 📚 Interval Definitions
+## 📚 区間について
 
-- **Open interval**: `(left, right)` means `left < x < right`
-- **Closed interval**: `[left, right]` means `left <= x <= right`
-
----
-
-## ✅ When to Use Binary Search
-
-- Applicable when conditions are **monotonic**:
-  - Either `False → True` or `True → False` with a **single transition point**
-- Must identify the **boundary** where this change occurs
-- Typically works best with **integers**
-  - Avoids floating-point precision issues and infinite loops
-- For floating-point domains, use a `for` loop with an acceptable **error threshold** instead of a `while` loop
+- 開区間: `left < a < right` → `(left, right)`
+- 閉区間: `left <= a <= right` → `[left, right]`
 
 ---
 
-## 🎯 Binary Search Principles
+## ✅ 二分探索を利用する場面
 
-- Always **binary search over the answer**, not the index blindly.
-- For nested functions, clearly define which part terminates the condition.
-- Know the direction of monotonicity and where the boundary lies:
-  - `True * → False`: Max of True
-  - `False * → True`: Min of True
-- For any search goal, tailor:
-  1. The `while` condition
-  2. The update rules
-  3. The final return value
+- ソートされた数列に対して、条件を満たすかどうかが単調的な場合。
+- 単調的な場合とは：
+  - `True → False` または `False → True` の切り替えが1回だけある。
+  - 境界がどこかに1個だけあり、それ以前（または以降）はずっと同じ判定結果である。
+- 基本的には整数しか扱わない：
+  - `while` 条件の終了が `left == right` にならないと無限ループの可能性があるため。
+  - 浮動小数点を扱う場合は、`for` で許容される誤差範囲になるまで回数を決めて回す。
 
 ---
 
-## 🔽 Finding the **Minimum Value that Satisfies `is_ok()`**
+## 🎯 二分探索のコツ
 
-### 🔹 Template 1 – Half-open interval `[left, right)`
+- 答えとなるものを必ず二分探索する。
+- 二重の関数になる時はそれぞれで止まるものを明確にする。
+- `True → False` の流れと境界値がどちら側かを確認する：
+
+  ```
+  True * → False：True を満たす最大
+  ⇔ False * → True：False を満たす最大（条件を反転するだけ）
+  False → * True：True を満たす最小
+  ⇔ True → * False：False を満たす最小（条件を反転するだけ）
+  ```
+
+- 求めたいものに応じて、以下を選ぶ：
+  1. `while` 条件
+  2. 条件による `left`, `right` の更新方法（範囲の狭め方）
+  3. `return` で返すもの
+
+---
+
+## 🔽 True を満たす最小を探す
+
+### 【典型コード①】
+
+- 半開区間 `[left, right)` で、`left` をじわじわ進めて `right` に追いつくまで狭めていく。
+- `left` は解に向かって前進する。
+- `right` は固定（常に True の保証がある）。
+- `right` はその時の答え候補。
+- `left == right` になったら探索終了。
 
 ```python
 while left < right:
     mid = (left + right) // 2
     if is_ok(mid):
-        right = mid  # mid is in True region
+        right = mid  # mid は True の範囲
     else:
-        left = mid + 1  # mid is in False region
+        left = mid + 1  # mid は False の範囲
 return left
 ```
 
-- `left` moves forward toward the solution
-- `right` holds the current best candidate (guaranteed to be True)
-- Terminates when `left == right`
-
 ---
 
-### 🔹 Template 2 – Explicit NG/OK boundaries `(left, right)`
+### 【典型コード②】
+
+- 閉区間 `[left, right]` の両端を固定し、範囲を狭めていく（常に left = False, right = True の保証がある）。
+- 実質的には開区間 `(left, right)` のようなイメージ。
+- `while` が成り立つ間は `left < mid < right` が保証され、毎回範囲を狭める。
 
 ```python
-left = NG  # definitely False
-right = OK  # definitely True
+left = definitely False
+right = definitely True
 while right - left > 1:
     mid = (left + right) // 2
     if is_ok(mid):
-        right = mid  # True region
+        right = mid  # mid も True 側
     else:
-        left = mid   # False region
+        left = mid   # mid は False 側
 return right
 ```
 
-- Ensures `left < mid < right` on each iteration
-- Returns the first `x` for which `is_ok(x) == True`
-
 ---
 
-## 🔼 Finding the **Maximum Value that Satisfies `is_ok()`**
+## 🔼 True を満たす最大を探す
 
-### 🔹 Template 1 – Closed interval `[left, right]` with memo
+### 【典型コード①】
+
+- 閉区間 `[left, right]` で、両方からじわじわ進めて狭めていく。
+- `left`, `right` ともに動くため、`mid` を記録しておく必要がある。
+- `ans` に直近の OK を保持。
+- `left > right` で終了。
 
 ```python
 ans = -1
@@ -92,15 +105,17 @@ while left <= right:
 return ans
 ```
 
-- Use `ans` to track the latest valid `mid` because both ends move
-
 ---
 
-### 🔹 Template 2 – Explicit OK/NG boundaries `(left, right)`
+### 【典型コード②】
+
+- 閉区間 `[left, right]` の両端を固定し、範囲を狭めていく（常に left = True, right = False の保証がある）。
+- 実質的には開区間 `(left, right)` のようなイメージ。
+- `while` 中は `left < mid < right` が常に成り立つ。
 
 ```python
-left = OK  # definitely True
-right = NG  # definitely False
+left = definitely True
+right = definitely False
 while right - left > 1:
     mid = (left + right) // 2
     if is_ok(mid):
@@ -110,17 +125,7 @@ while right - left > 1:
 return left
 ```
 
-- Returns the **last** position where `is_ok(x) == True`
-
 ---
 
-## 🧠 Bonus Tips
-
-- Choose the right interval based on where the answer lies (inclusive or exclusive)
-- Use `right - left > 1` style for clean, precise boundaries
-- For floats: switch to `for`-loop with convergence like `abs(right - left) < EPS`
-
----
-
-> Created: 2025-04-21  
-> Filename: `binary_search_cheatsheet.md`
+> 作成日: 2025年4月21日  
+> ファイル名: `250421_binarysearch.md`
