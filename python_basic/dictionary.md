@@ -36,7 +36,7 @@ print(result_get_d)  # None
 result_get_z_default = results.get('z', 0)
 print(result_get_z_default)  # 0
 ```
-
+-----
 ### 辞書のキーと値に使えるもの
 
 * **キー (key) に使えるもの**:
@@ -46,7 +46,7 @@ print(result_get_z_default)  # 0
 
 * **値 (value) に使えるもの**:
     * 制限はありません。任意のPythonオブジェクトを入れることができます（数値、文字列、リスト、辞書、クラスのインスタンス、関数、オブジェクトなど）。
-
+-----
 ### `defaultdict` の意味と使い方
 
 `collections` モジュールの `defaultdict` を使うと、存在しないキーにアクセスしたときに自動的にデフォルト値を代入してくれます。これは、辞書にリストを追加していく場合などに特に便利です。
@@ -71,7 +71,112 @@ print(d)  # defaultdict(<class 'list'>, {'fruit': ['apple', 'banana']})
 # ang_dict = defaultdict(list)
 # ang_dict[sort_word].append(word)
 ```
+`collections`モジュールの`defaultdict`は、Pythonの組み込み辞書`dict`のサブクラスで、**キーが存在しない場合に、自動的にデフォルト値を生成して返す**という便利な機能を持っています。このデフォルト値を生成する関数を `default_factory` と呼びます。
 
+`defaultdict(int)` の場合、`default_factory` に `int` が指定されています。これは、キーが存在しない場合に `int()` が呼び出され、その結果である **`0`** がデフォルト値として使われることを意味します。
+
+#### 1. `defaultdict(int)`
+
+* **`default_factory`**: `int` (int型のコンストラクタ)
+* **挙動**: 存在しないキーにアクセスすると、`int()` が呼び出されて `0` がデフォルト値として設定されます。
+* **主な用途**:
+    * **カウンタ:** 各要素の出現回数を数えるのに非常に便利です。`d[key] += 1` のように、存在チェックなしで直接加算できます。
+    * **合計値:** カテゴリごとの合計を計算する際など。
+
+    ```python
+    from collections import defaultdict
+
+    counts = defaultdict(int)
+    words = ["apple", "banana", "apple", "orange"]
+    for word in words:
+        counts[word] += 1 # 'apple'が初回にアクセスされた時、counts['apple']は0になる
+    print(counts) # defaultdict(<class 'int'>, {'apple': 2, 'banana': 1, 'orange': 1})
+    print(counts['grape']) # 'grape'は存在しないがKeyErrorにならず0が返る
+    ```
+
+#### 2. `defaultdict(list)`
+
+* **`default_factory`**: `list` (list型のコンストラクタ)
+* **挙動**: 存在しないキーにアクセスすると、`list()` が呼び出されて **空のリスト `[]`** がデフォルト値として設定されます。
+* **主な用途**:
+    * **グループ化:** 特定のキーに関連する複数の値をリストにまとめる場合に非常に便利です。
+    * **隣接リスト:** グラフの表現（各ノードが接続するノードのリストを持つ）など。
+
+    ```python
+    from collections import defaultdict
+
+    groups = defaultdict(list)
+    data = [('fruit', 'apple'), ('color', 'red'), ('fruit', 'banana')]
+    for category, item in data:
+        groups[category].append(item) # 'fruit'が初回にアクセスされた時、groups['fruit']は[]になる
+    print(groups) # defaultdict(<class 'list'>, {'fruit': ['apple', 'banana'], 'color': ['red']})
+    print(groups['vegetable']) # 'vegetable'は存在しないがKeyErrorにならず空リストが返る
+    ```
+
+#### 3. `defaultdict(dict)`
+
+* **`default_factory`**: `dict` (dict型のコンストラクタ)
+* **挙動**: 存在しないキーにアクセスすると、`dict()` が呼び出されて **空の辞書 `{}`** がデフォルト値として設定されます。
+* **主な用途**:
+    * **ネストされた辞書:** 複数レベルでデータを整理する場合に便利です。
+
+    ```python
+    from collections import defaultdict
+
+    nested_dict = defaultdict(dict)
+    nested_dict['users']['Alice'] = {'age': 30, 'city': 'New York'}
+    nested_dict['users']['Bob'] = {'age': 25, 'city': 'London'}
+    print(nested_dict)
+    # defaultdict(<class 'dict'>, {'users': {'Alice': {'age': 30, 'city': 'New York'}, 'Bob': {'age': 25, 'city': 'London'}}})
+    print(nested_dict['products']) # 'products'は存在しないがKeyErrorにならず空辞書が返る
+    ```
+
+#### 4. `defaultdict(set)`
+
+* **`default_factory`**: `set` (set型のコンストラクタ)
+* **挙動**: 存在しないキーにアクセスすると、`set()` が呼び出されて **空のセット `{}`** がデフォルト値として設定されます。
+* **主な用途**:
+    * **重複なしのグループ化:** キーに関連する重複のない要素のコレクションを作成したい場合。
+
+    ```python
+    from collections import defaultdict
+
+    unique_items = defaultdict(set)
+    items = [('tag1', 'a'), ('tag2', 'b'), ('tag1', 'a'), ('tag3', 'c')]
+    for tag, item in items:
+        unique_items[tag].add(item)
+    print(unique_items) # defaultdict(<class 'set'>, {'tag1': {'a'}, 'tag2': {'b'}, 'tag3': {'c'}})
+    ```
+
+#### 5. `defaultdict(lambda)` (ラムダ関数)
+
+* **`default_factory`**: `lambda` (無名関数)
+* **挙動**: 存在しないキーにアクセスすると、指定したラムダ関数が呼び出され、その返り値がデフォルト値として設定されます。
+* **主な用途**:
+    * **任意の初期値:** `int()` や `list()` 以外の特定の初期値を設定したい場合。
+    * **より複雑な初期化:** 初期値が複雑なロジックを必要とする場合。
+
+    ```python
+    from collections import defaultdict
+
+    # デフォルト値を 'N/A' に設定する例
+    status = defaultdict(lambda: 'N/A')
+    status['item1'] = 'Available'
+    print(status['item1']) # Available
+    print(status['item2']) # N/A
+
+    # デフォルト値を defaultdict(int) に設定する例 (ネストされた defaultdict)
+    nested_counter = defaultdict(lambda: defaultdict(int))
+    nested_counter['category1']['itemA'] += 1
+    print(nested_counter['category1']['itemA']) # 1
+    print(nested_counter['category2']['itemB']) # 0 (存在しないキーにアクセスすると、まず'category2'にdefaultdict(int)が作成され、次に'itemB'に0が作成される)
+    ```
+### `defaultdict` を使う利点
+
+* **コードの簡潔さ**: キーが存在するかどうかを `if key in dict:` のように毎回チェックする必要がなくなります。
+* **エラーの回避**: `KeyError` が発生するのを防ぎます。
+
+-----
 ### 辞書からキーや値の一覧を取得
 
 | 操作     | 例            | 結果              |
