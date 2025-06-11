@@ -99,6 +99,7 @@ print(int_list)  # [1, 2, 3]
 | ランダム順 | `random.shuffle(my_list)`   | リストをその場でランダムに並び替える (`import random` が必要) | 元リストが変化 |
 
 `list.reverse()` や `list.sort()`、`random.shuffle()` は、元のリストを変更し、戻り値は `None` です。
+my_list[::]とmy_list[:]は同じでどちらもmy_listのコピーを作成するだけ
 
 ### 順番変更 (カスタム)
 
