@@ -126,6 +126,8 @@ return left
 ```
 
 ---
+### 二分探索の問題とその検討
+[704. Binary Serach](https://leetcode.com/problems/binary-search/editorial)
 
 > 作成日: 2025年4月21日  
 > ファイル名: `250421_binarysearch.md`
