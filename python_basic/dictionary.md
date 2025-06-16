@@ -184,6 +184,7 @@ print(d)  # defaultdict(<class 'list'>, {'fruit': ['apple', 'banana']})
 | キー一覧 | `d.keys()`    | `dict_keys([...])` |
 | 値一覧   | `d.values()`  | `dict_values([...])` |
 | アイテム一覧 | `d.items()`   | `dict_items([...])` |
+| 長さ | `len(d)`   | keyの数 |
 
 これらはビューオブジェクトなので、リストとして使いたい場合は `list()` で変換します。
 
